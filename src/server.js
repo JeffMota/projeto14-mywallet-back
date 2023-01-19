@@ -22,6 +22,35 @@ try {
 
 const db = mongoClient.db()
 
+//Buscar registros
+server.get('/registries', async (req, res) => {
+    const { authorization } = req.headers
+    const token = authorization.replace('Bearer ', '')
+
+    const headerSchema = joi.object({
+        token: joi.string().required().max(100)
+    })
+
+    const { error } = headerSchema.validate({ token })
+    if (error) return res.status(422).send(error.details[0].message)
+
+    try {
+
+        const checkSession = await db.collection('session').findOne({ token })
+        if (!checkSession) return res.status(401).send('Você não tem autorização para acessar esses dados!')
+
+        const user = await db.collection('users').findOne({ _id: ObjectId(checkSession.userId) })
+
+        const registries = await db.collection(`registries${user.name}`).find().toArray()
+
+        res.send(registries)
+
+    } catch (error) {
+        res.status(500).send(error.message)
+    }
+
+})
+
 //Cadastrar usuário
 server.post('/sign-up', async (req, res) => {
     const body = req.body
