@@ -10,5 +10,4 @@ server.use(express.json())
 server.use(authRouter)
 server.use(registriesRouter)
 
-const PORT = 5000
-server.listen(PORT, () => console.log(`Rodando na porta: ${PORT}`))
+server.listen(process.env.PORT, () => console.log(`Rodando na porta: ${process.env.PORT}`))
