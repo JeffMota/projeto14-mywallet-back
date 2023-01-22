@@ -4,16 +4,11 @@ import { ObjectId } from 'mongodb'
 import { v4 as uuid } from 'uuid'
 import db from '../config/database.js'
 
+import { loginSchema, userSchema } from '../schemas/AuthSchema.js'
+
 //Cadastrar usuário
 export async function signUp(req, res) {
     const body = req.body
-
-    const userSchema = joi.object({
-        name: joi.string().min(3).max(30).required(),
-        email: joi.string().email().max(30).required(),
-        password: joi.string().min(3).max(30).required(),
-        confirmPassword: joi.string().valid(joi.ref('password')).required()
-    })
 
     const { error } = userSchema.validate(body, { abortEarly: false })
 
@@ -47,11 +42,6 @@ export async function signUp(req, res) {
 export async function signIn(req, res) {
     const body = req.body
 
-    const loginSchema = joi.object({
-        email: joi.string().email().max(30).required(),
-        password: joi.string().min(3).max(30).required()
-    })
-
     const { error } = loginSchema.validate(body, { abortEarly: false })
     if (error) {
         const err = error.details.map(detail => detail.message)
@@ -84,7 +74,7 @@ export async function signIn(req, res) {
                 }
             )
 
-            return res.send(token)
+            return res.send({ token, name: userExist.name })
 
         }
 
@@ -96,7 +86,7 @@ export async function signIn(req, res) {
             token
         })
 
-        res.send(token)
+        res.send({ token, name: userExist.name })
 
     } catch (error) {
         return res.status(500).send(error.message)

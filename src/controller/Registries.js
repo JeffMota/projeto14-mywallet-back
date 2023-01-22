@@ -5,14 +5,7 @@ import db from '../config/database.js'
 //Buscar registros
 export async function listRegistries(req, res) {
     const { authorization } = req.headers
-    const token = authorization.replace('Bearer ', '')
-
-    const headerSchema = joi.object({
-        token: joi.string().required().max(100)
-    })
-
-    const { error } = headerSchema.validate({ token })
-    if (error) return res.status(422).send(error.details[0].message)
+    const token = authorization?.replace('Bearer ', '')
 
     try {
 
@@ -42,20 +35,7 @@ export async function listRegistries(req, res) {
 export async function resgistry(req, res) {
     const { value, description, type } = req.body
     const { authorization } = req.headers
-    const token = authorization.replace('Bearer ', '')
-
-    const headerSchema = joi.object({
-        value: joi.number().max(1000000000).required(),
-        description: joi.string().min(1).max(100).required(),
-        type: joi.string().valid('entrada', 'saida').required(),
-        token: joi.string().required().max(100)
-    })
-
-    const { error } = headerSchema.validate({ token, value, description, type })
-    if (error) {
-        const err = error.details.map(detail => detail.message)
-        return res.status(422).send(err)
-    }
+    const token = authorization?.replace('Bearer ', '')
 
     try {
 
@@ -65,11 +45,11 @@ export async function resgistry(req, res) {
         await db.collection(`registries${checkSession.name}`).insertOne({
             date: dayjs().format('DD/MM'),
             description,
-            value,
+            value: Number(value),
             type
         })
 
-        res.send(201)
+        res.sendStatus(201)
 
     } catch (error) {
         res.status(500).send(error.message)
